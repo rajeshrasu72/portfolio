@@ -177,3 +177,66 @@ themeButton.addEventListener("click", () => {
   localStorage.setItem("selected-theme", getCurrentTheme());
   localStorage.setItem("selected-icon", getCurrentIcon());
 });
+
+/*==================== CONTACT: SEND VIA EMAILJS ====================*/
+// Update these to your actual EmailJS service/template IDs
+const EMAILJS_SERVICE_ID = "service_d9czf9p";
+const EMAILJS_TEMPLATE_ID = "template_mmcfgg6";
+
+// Expose a global function so inline onclick="sendMail(event)" works
+window.sendMail = function (e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  const nameInput = document.getElementById("contact-name");
+  const emailInput = document.getElementById("contact-email");
+  const subjectInput = document.getElementById("contact-subject");
+  const messageInput = document.getElementById("contact-message");
+
+  const name = nameInput ? nameInput.value.trim() : "";
+  const email = emailInput ? emailInput.value.trim() : "";
+  const subject = subjectInput ? subjectInput.value.trim() : "";
+  const message = messageInput ? messageInput.value.trim() : "";
+
+  if (!window.emailjs || !emailjs.send) {
+    alert("Email service not loaded. Please try again later.");
+    return;
+  }
+
+  // Map to your EmailJS template variables
+  const params = {
+    name: name,
+    email: email,
+    subject: subject,
+    message: message,
+    from_name: name,
+    from_email: email,
+  };
+
+  const trigger = document.getElementById("send-mail");
+  if (trigger) trigger.classList.add("button--loading");
+
+  emailjs
+    .send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
+    .then(() => {
+      alert("Message sent successfully!");
+      if (nameInput) nameInput.value = "";
+      if (emailInput) emailInput.value = "";
+      if (subjectInput) subjectInput.value = "";
+      if (messageInput) messageInput.value = "";
+    })
+    .catch((err) => {
+      console.error("EmailJS error", err);
+      alert("Failed to send. Please try again later.");
+    })
+    .finally(() => {
+      if (trigger) trigger.classList.remove("button--loading");
+    });
+};
+
+// Also wire up the existing link/button with id="send-mail"
+document.addEventListener("DOMContentLoaded", function () {
+  const sendMailButton = document.getElementById("send-mail");
+  if (sendMailButton) {
+    sendMailButton.addEventListener("click", window.sendMail);
+  }
+});
